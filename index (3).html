@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Âm Miền Tây - AI Voice Cloning</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #e0f4ff 0%, #fff0f5 50%, #ffffff 100%);
+        }
+        
+        .wave-bg {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2387CEEB' fill-opacity='0.15' d='M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,165.3C672,171,768,213,864,213.3C960,213,1056,171,1152,149.3C1248,128,1344,128,1392,128L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: bottom;
+            background-size: 100%;
+        }
+        
+        .record-btn {
+            background: linear-gradient(145deg, #87CEEB, #FFB6C1);
+            box-shadow: 0 10px 40px rgba(135, 206, 235, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .record-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(135, 206, 235, 0.5);
+        }
+        
+        .record-btn.recording {
+            animation: pulse-record 1.5s infinite;
+        }
+        
+        @keyframes pulse-record {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 129, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 107, 129, 0); }
+        }
+        
+        .wave-animation {
+            animation: wave 2s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        
+        .step-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(135, 206, 235, 0.3);
+        }
+        
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(135, 206, 235, 0.2);
+        }
+        
+        .text-editor {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fcff 100%);
+            border: 2px solid rgba(135, 206, 235, 0.3);
+        }
+        
+        .text-editor:focus {
+            border-color: #87CEEB;
+            box-shadow: 0 0 20px rgba(135, 206, 235, 0.2);
+        }
+        
+        .emotion-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .emotion-btn.active {
+            background: linear-gradient(145deg, #87CEEB, #FFB6C1);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .postcard {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 1px solid rgba(135, 206, 235, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .postcard:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(135, 206, 235, 0.2);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #87CEEB, #FFB6C1);
+        }
+        
+        .doraemon-float {
+            animation: doraemon-bounce 4s ease-in-out infinite;
+        }
+        
+        @keyframes doraemon-bounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            25% { transform: translateY(-15px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+            75% { transform: translateY(-20px) rotate(0deg); }
+        }
+        
+        .nón-lá {
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        }
+        
+        .sound-wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 30px;
+        }
+        
+        .sound-wave span {
+            width: 4px;
+            background: linear-gradient(180deg, #87CEEB, #FFB6C1);
+            border-radius: 2px;
+            animation: sound-wave 0.5s ease-in-out infinite alternate;
+        }
+        
+        .sound-wave span:nth-child(1) { animation-delay: 0s; height: 30%; }
+        .sound-wave span:nth-child(2) { animation-delay: 0.1s; height: 60%; }
+        .sound-wave span:nth-child(3) { animation-delay: 0.2s; height: 100%; }
+        .sound-wave span:nth-child(4) { animation-delay: 0.3s; height: 60%; }
+        .sound-wave span:nth-child(5) { animation-delay: 0.4s; height: 30%; }
+        
+        @keyframes sound-wave {
+            from { height: 30%; }
+            to { height: 100%; }
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(135, 206, 235, 0.3);
+            animation: ripple-effect 2s infinite;
+        }
+        
+        @keyframes ripple-effect {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        
+        .tab-active {
+            background: linear-gradient(145deg, #87CEEB, #a8d8ea);
+            color: white;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: linear-gradient(90deg, #87CEEB, #FFB6C1);
+            border-radius: 4px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 3px solid #87CEEB;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .processing-overlay {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-sky-100">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- Logo with wave icon -->
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-400 to-pink-300 flex items-center justify-center">
+                    <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-sky-500 to-pink-400 bg-clip-text text-transparent">Thanh Âm Miền Tây</h1>
+                    <p class="text-xs text-gray-500">AI Voice Cloning • Nam Bộ</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button class="px-4 py-2 text-gray-600 hover:text-sky-500 transition-colors font-medium">Hướng dẫn</button>
+                <button class="px-5 py-2.5 bg-gradient-to-r from-sky-400 to-pink-300 text-white rounded-full font-semibold hover:shadow-lg transition-all">
+                    Đăng nhập
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-28 pb-16 px-6 wave-bg min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left Content -->
+                <div class="text-center lg:text-left">
+                    <!-- Doraemon mascot -->
+                    <div class="doraemon-float inline-block mb-6">
+                        <svg width="80" height="80" viewBox="0 0 100 100" class="drop-shadow-lg">
+                            <!-- Doraemon Face -->
+                            <circle cx="50" cy="50" r="45" fill="#00A0DC"/>
+                            <circle cx="50" cy="55" r="35" fill="white"/>
+                            <!-- Eyes -->
+                            <ellipse cx="40" cy="35" rx="10" ry="12" fill="white"/>
+                            <ellipse cx="60" cy="35" rx="10" ry="12" fill="white"/>
+                            <circle cx="43" cy="37" r="5" fill="black"/>
+                            <circle cx="57" cy="37" r="5" fill="black"/>
+                            <circle cx="44" cy="35" r="2" fill="white"/>
+                            <circle cx="58" cy="35" r="2" fill="white"/>
+                            <!-- Nose -->
+                            <circle cx="50" cy="48" r="6" fill="#FF6B6B"/>
+                            <ellipse cx="52" cy="46" rx="2" ry="1.5" fill="white" opacity="0.5"/>
+                            <!-- Mouth -->
+                            <line x1="50" y1="54" x2="50" y2="70" stroke="black" stroke-width="2"/>
+                            <path d="M 30 65 Q 50 85 70 65" stroke="black" stroke-width="2" fill="none"/>
+                            <!-- Whiskers -->
+                            <line x1="15" y1="50" x2="32" y2="52" stroke="black" stroke-width="1.5"/>
+                            <line x1="15" y1="58" x2="32" y2="58" stroke="black" stroke-width="1.5"/>
+                            <line x1="15" y1="66" x2="32" y2="64" stroke="black" stroke-width="1.5"/>
+                            <line x1="85" y1="50" x2="68" y2="52" stroke="black" stroke-width="1.5"/>
+                            <line x1="85" y1="58" x2="68" y2="58" stroke="black" stroke-width="1.5"/>
+                            <line x1="85" y1="66" x2="68" y2="64" stroke="black" stroke-width="1.5"/>
+                            <!-- Bell -->
+                            <circle cx="50" cy="78" r="5" fill="#FFD700"/>
+                            <line x1="48" y1="76" x2="52" y2="76" stroke="#B8860B" stroke-width="1"/>
+                            <circle cx="50" cy="80" r="1.5" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-800 mb-6 leading-tight">
+                        Nhân bản giọng nói
+                        <span class="bg-gradient-to-r from-sky-500 to-pink-400 bg-clip-text text-transparent"> Miền Tây</span>
+                        <br>chỉ trong 10 giây
+                    </h2>
+                    
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        Công nghệ AI tiên tiến giữ nguyên <strong>sắc thái luyến láy</strong> và 
+                        <strong>phát âm đặc trưng</strong> của giọng Nam Bộ. Tạo Podcast, Voice-over 
+                        chất lượng cao trong tích tắc.
+                    </p>
+                    
+                    <!-- 3 Steps -->
+                    <div class="flex flex-wrap justify-center lg:justify-start gap-4 mb-10">
+                        <div class="step-card px-5 py-3 rounded-2xl flex items-center gap-3 transition-all">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-sky-300 flex items-center justify-center text-white font-bold">1</div>
+                            <span class="font-semibold text-gray-700">Ghi âm</span>
+                        </div>
+                        <div class="text-sky-300 flex items-center">→</div>
+                        <div class="step-card px-5 py-3 rounded-2xl flex items-center gap-3 transition-all">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-pink-300 flex items-center justify-center text-white font-bold">2</div>
+                            <span class="font-semibold text-gray-700">Nhập văn bản</span>
+                        </div>
+                        <div class="text-pink-300 flex items-center">→</div>
+                        <div class="step-card px-5 py-3 rounded-2xl flex items-center gap-3 transition-all">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-300 flex items-center justify-center text-white font-bold">3</div>
+                            <span class="font-semibold text-gray-700">Phát Podcast</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right - Recording Card -->
+                <div class="relative">
+                    <!-- Decorative elements -->
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-sky-200/30 rounded-full blur-3xl"></div>
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-pink-200/30 rounded-full blur-3xl"></div>
+                    
+                    <!-- Nón lá decoration -->
+                    <div class="absolute -top-8 right-10 opacity-20">
+                        <div class="w-16 h-12 nón-lá bg-gradient-to-b from-amber-200 to-amber-400"></div>
+                    </div>
+                    
+                    <div id="recordingCard" class="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-sky-100">
+                        <div class="text-center">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Bắt đầu tạo giọng nói AI</h3>
+                            <p class="text-gray-500 mb-8">Ghi âm hoặc tải lên mẫu giọng nói của bạn</p>
+                            
+                            <!-- Recording Button -->
+                            <div class="relative inline-block mb-8">
+                                <div id="ripple1" class="ripple w-40 h-40 -top-4 -left-4 hidden"></div>
+                                <div id="ripple2" class="ripple w-40 h-40 -top-4 -left-4 hidden" style="animation-delay: 0.5s;"></div>
+                                
+                                <button id="recordBtn" class="record-btn w-32 h-32 rounded-full flex items-center justify-center text-white relative z-10">
+                                    <svg id="micIcon" class="w-14 h-14" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/>
+                                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                    </svg>
+                                    <svg id="stopIcon" class="w-14 h-14 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                        <rect x="6" y="6" width="12" height="12" rx="2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Timer -->
+                            <div id="timerDisplay" class="text-4xl font-bold text-gray-800 mb-2 hidden">
+                                <span id="timer">00:00</span>
+                            </div>
+                            <p id="timerHint" class="text-sm text-gray-500 hidden">Cần tối thiểu 10 giây</p>
+                            
+                            <!-- Progress bar -->
+                            <div id="progressContainer" class="w-full bg-gray-100 rounded-full h-2 mb-6 hidden">
+                                <div id="progressBar" class="progress-bar h-2 rounded-full transition-all duration-100" style="width: 0%"></div>
+                            </div>
+                            
+                            <p id="recordHint" class="text-sm text-gray-500 mb-6">Nhấn để bắt đầu ghi âm</p>
+                            
+                            <!-- Divider -->
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="flex-1 h-px bg-gray-200"></div>
+                                <span class="text-gray-400 text-sm">hoặc</span>
+                                <div class="flex-1 h-px bg-gray-200"></div>
+                            </div>
+                            
+                            <!-- Upload -->
+                            <label class="block cursor-pointer">
+                                <input type="file" accept="audio/*" class="hidden" id="audioUpload">
+                                <div class="border-2 border-dashed border-sky-200 rounded-2xl p-6 hover:border-sky-400 hover:bg-sky-50/50 transition-all">
+                                    <svg class="w-10 h-10 mx-auto text-sky-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                    <p class="text-gray-600 font-medium">Tải lên tệp âm thanh</p>
+                                    <p class="text-gray-400 text-sm mt-1">MP3, WAV, M4A (tối thiểu 10 giây)</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workspace Section -->
+    <section id="workspace" class="py-16 px-6 bg-white/50">
+        <div class="max-w-7xl mx-auto">
+            <!-- Voice Status -->
+            <div id="voiceStatus" class="mb-8 p-4 bg-gradient-to-r from-sky-50 to-pink-50 rounded-2xl border border-sky-100 flex items-center justify-between hidden">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-pink-300 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Giọng nói đã sẵn sàng!</h4>
+                        <p class="text-sm text-gray-500">Mẫu giọng: <span id="voiceName">Giọng Miền Tây #1</span></p>
+                    </div>
+                </div>
+                <button id="changeVoiceBtn" class="px-4 py-2 text-sky-600 hover:bg-sky-100 rounded-xl font-medium transition-colors">
+                    Đổi giọng khác
+                </button>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Text Editor -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">Soạn thảo văn bản</h3>
+                            <div class="flex items-center gap-2 text-sm text-gray-500">
+                                <span id="charCount">0</span> ký tự
+                            </div>
+                        </div>
+                        
+                        <textarea 
+                            id="textEditor" 
+                            class="text-editor w-full h-64 p-5 rounded-2xl resize-none focus:outline-none text-gray-700 text-lg leading-relaxed"
+                            placeholder="Nhập văn bản cần chuyển đổi thành giọng nói tại đây...
+
+Ví dụ: 'Xin chào bà con cô bác, hôm nay tui xin chia sẻ về câu chuyện vùng sông nước Miền Tây...'"
+                        ></textarea>
+                        
+                        <!-- Controls -->
+                        <div class="mt-6 grid md:grid-cols-2 gap-6">
+                            <!-- Speed Control -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                    Tốc độ đọc
+                                </label>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-sm text-gray-500">🐢</span>
+                                    <input type="range" id="speedRange" min="0.5" max="2" step="0.1" value="1" class="flex-1">
+                                    <span class="text-sm text-gray-500">🐇</span>
+                                    <span id="speedValue" class="text-sm font-bold text-sky-600 w-12 text-right">1.0x</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Emotion -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                    Cảm xúc giọng đọc
+                                </label>
+                                <div class="flex gap-2">
+                                    <button class="emotion-btn flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 font-medium text-gray-600 hover:border-sky-300 active" data-emotion="neutral">
+                                        😊 Bình thường
+                                    </button>
+                                    <button class="emotion-btn flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 font-medium text-gray-600 hover:border-sky-300" data-emotion="happy">
+                                        😄 Vui
+                                    </button>
+                                    <button class="emotion-btn flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 font-medium text-gray-600 hover:border-sky-300" data-emotion="sad">
+                                        😢 Buồn
+                                    </button>
+                                    <button class="emotion-btn flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 font-medium text-gray-600 hover:border-sky-300" data-emotion="intimate">
+                                        💭 Tâm tình
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Generate Button -->
+                        <button id="generateBtn" class="mt-6 w-full py-4 bg-gradient-to-r from-sky-400 to-pink-400 text-white rounded-2xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                            Tạo Podcast / Voice-over
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Preview & Download -->
+                <div>
+                    <div class="bg-white rounded-3xl shadow-lg p-6 border border-gray-100 sticky top-24">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Xem trước & Tải xuống</h3>
+                        
+                        <!-- Audio Player -->
+                        <div id="audioPlayerContainer" class="mb-6">
+                            <div class="bg-gradient-to-br from-sky-50 to-pink-50 rounded-2xl p-6 text-center">
+                                <div class="sound-wave justify-center mb-4 opacity-30">
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                </div>
+                                <p class="text-gray-500 text-sm">Chưa có âm thanh</p>
+                                <p class="text-gray-400 text-xs mt-1">Nhập văn bản và nhấn "Tạo Podcast"</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Generated Audio Player (hidden initially) -->
+                        <div id="generatedAudio" class="hidden">
+                            <div class="bg-gradient-to-br from-sky-100 to-pink-100 rounded-2xl p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <button id="playPauseBtn" class="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
+                                        <svg id="playIcon" class="w-7 h-7 text-sky-500 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                        <svg id="pauseIcon" class="w-7 h-7 text-sky-500 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                        </svg>
+                                    </button>
+                                    <div class="sound-wave">
+                                        <span></span><span></span><span></span><span></span><span></span>
+                                    </div>
+                                    <span id="audioDuration" class="text-gray-600 font-medium">0:00</span>
+                                </div>
+                                
+                                <!-- Progress -->
+                                <div class="w-full bg-white/50 rounded-full h-2 mb-2">
+                                    <div id="audioProgress" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500">
+                                    <span id="currentTime">0:00</span>
+                                    <span id="totalTime">0:00</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Download Options -->
+                            <div class="mt-4 space-y-3">
+                                <button class="w-full py-3 bg-gradient-to-r from-sky-400 to-sky-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    Tải xuống MP3
+                                </button>
+                                <button class="w-full py-3 border-2 border-pink-300 text-pink-500 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-pink-50 transition-all">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                                    </svg>
+                                    Lưu vào Thư viện
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Library Section -->
+    <section id="library" class="py-16 px-6 bg-gradient-to-b from-white/50 to-sky-50/30">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800">Thư viện Postcard Giọng nói</h3>
+                    <p class="text-gray-500 mt-1">Lưu trữ và quản lý các bản ghi đã tạo</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="tab-active px-4 py-2 rounded-xl font-medium transition-all">Tất cả</button>
+                    <button class="px-4 py-2 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-all">Podcast</button>
+                    <button class="px-4 py-2 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-all">Voice-over</button>
+                </div>
+            </div>
+            
+            <!-- Postcards Grid -->
+            <div id="postcardGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Sample Postcard 1 -->
+                <div class="postcard rounded-2xl p-5">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-400 to-sky-300 flex items-center justify-center text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 bg-sky-100 text-sky-600 text-xs font-medium rounded-full">Podcast</span>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Chuyện vùng sông nước</h4>
+                    <p class="text-gray-500 text-sm mb-4 line-clamp-2">Xin chào bà con cô bác, hôm nay tui xin chia sẻ về câu chuyện vùng sông nước Miền Tây thân thương...</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            2:34
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-500 hover:bg-sky-200 transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sample Postcard 2 -->
+                <div class="postcard rounded-2xl p-5">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-400 to-pink-300 flex items-center justify-center text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 bg-pink-100 text-pink-600 text-xs font-medium rounded-full">Voice-over</span>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Quảng cáo trái cây</h4>
+                    <p class="text-gray-500 text-sm mb-4 line-clamp-2">Trái cây Miền Tây tươi ngon, ngọt lịm, bà con ơi ghé mua ủng hộ nha...</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            0:45
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 hover:bg-pink-200 transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Empty State -->
+                <div class="postcard rounded-2xl p-5 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center min-h-[200px]">
+                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 font-medium">Tạo Postcard mới</p>
+                    <p class="text-gray-400 text-sm mt-1">Bắt đầu từ bước ghi âm</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 bg-gradient-to-b from-sky-50/30 to-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-pink-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                    <span class="font-bold text-gray-700">Thanh Âm Miền Tây</span>
+                </div>
+                
+                <div class="flex items-center gap-6 text-sm text-gray-500">
+                    <a href="#" class="hover:text-sky-500 transition-colors">Điều khoản sử dụng</a>
+                    <a href="#" class="hover:text-sky-500 transition-colors">Chính sách bảo mật</a>
+                    <a href="#" class="hover:text-sky-500 transition-colors">Liên hệ</a>
+                </div>
+                
+                <p class="text-sm text-gray-400">© 2024 Thanh Âm Miền Tây. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Processing Modal -->
+    <div id="processingModal" class="fixed inset-0 z-50 hidden">
+        <div class="processing-overlay w-full h-full flex items-center justify-center">
+            <div class="text-center">
+                <div class="relative inline-block mb-6">
+                    <div class="w-24 h-24 rounded-full border-4 border-sky-200 border-t-sky-500 spinner"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Đang xử lý giọng nói...</h3>
+                <p id="processingStatus" class="text-gray-500">Phân tích mẫu giọng nói</p>
+                <div class="w-64 bg-gray-100 rounded-full h-2 mt-4 mx-auto">
+                    <div id="processingProgress" class="progress-bar h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let isRecording = false;
+        let recordingTime = 0;
+        let recordingInterval = null;
+        let voiceReady = false;
+        let currentEmotion = 'neutral';
+        
+        // DOM Elements
+        const recordBtn = document.getElementById('recordBtn');
+        const micIcon = document.getElementById('micIcon');
+        const stopIcon = document.getElementById('stopIcon');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timer = document.getElementById('timer');
+        const timerHint = document.getElementById('timerHint');
+        const recordHint = document.getElementById('recordHint');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const ripple1 = document.getElementById('ripple1');
+        const ripple2 = document.getElementById('ripple2');
+        const textEditor = document.getElementById('textEditor');
+        const charCount = document.getElementById('charCount');
+        const speedRange = document.getElementById('speedRange');
+        const speedValue = document.getElementById('speedValue');
+        const generateBtn = document.getElementById('generateBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+        const generatedAudio = document.getElementById('generatedAudio');
+        const processingModal = document.getElementById('processingModal');
+        const processingProgress = document.getElementById('processingProgress');
+        const processingStatus = document.getElementById('processingStatus');
+        
+        // Recording functionality
+        recordBtn.addEventListener('click', () => {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+        
+        function startRecording() {
+            isRecording = true;
+            recordingTime = 0;
+            recordBtn.classList.add('recording');
+            micIcon.classList.add('hidden');
+            stopIcon.classList.remove('hidden');
+            timerDisplay.classList.remove('hidden');
+            timerHint.classList.remove('hidden');
+            progressContainer.classList.remove('hidden');
+            recordHint.classList.add('hidden');
+            ripple1.classList.remove('hidden');
+            ripple2.classList.remove('hidden');
+            
+            recordingInterval = setInterval(() => {
+                recordingTime++;
+                const minutes = Math.floor(recordingTime / 60).toString().padStart(2, '0');
+                const seconds = (recordingTime % 60).toString().padStart(2, '0');
+                timer.textContent = `${minutes}:${seconds}`;
+                
+                // Update progress (10 seconds = 100%)
+                const progress = Math.min((recordingTime / 10) * 100, 100);
+                progressBar.style.width = `${progress}%`;
+                
+                if (recordingTime >= 10) {
+                    timerHint.textContent = '✓ Đủ thời gian! Có thể dừng hoặc tiếp tục';
+                    timerHint.classList.add('text-green-500');
+                }
+            }, 1000);
+        }
+        
+        function stopRecording() {
+            if (recordingTime < 10) {
+                alert('Cần ghi âm tối thiểu 10 giây!');
+                return;
+            }
+            
+            isRecording = false;
+            clearInterval(recordingInterval);
+            recordBtn.classList.remove('recording');
+            micIcon.classList.remove('hidden');
+            stopIcon.classList.add('hidden');
+            ripple1.classList.add('hidden');
+            ripple2.classList.add('hidden');
+            
+            // Show processing
+            showProcessingModal();
+        }
+        
+        // File upload
+        document.getElementById('audioUpload').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                showProcessingModal();
+            }
+        });
+        
+        function showProcessingModal() {
+            processingModal.classList.remove('hidden');
+            let progress = 0;
+            const statuses = [
+                'Phân tích mẫu giọng nói...',
+                'Trích xuất đặc trưng giọng nói...',
+                'Học sắc thái luyến láy...',
+                'Nhân bản giọng nói AI...',
+                'Hoàn tất!'
+            ];
+            
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                processingProgress.style.width = `${progress}%`;
+                
+                if (progress >= 25 && progress < 50) {
+                    processingStatus.textContent = statuses[1];
+                } else if (progress >= 50 && progress < 75) {
+                    processingStatus.textContent = statuses[2];
+                } else if (progress >= 75 && progress < 100) {
+                    processingStatus.textContent = statuses[3];
+                } else if (progress >= 100) {
+                    processingStatus.textContent = statuses[4];
+                    clearInterval(progressInterval);
+                    
+                    setTimeout(() => {
+                        processingModal.classList.add('hidden');
+                        voiceReady = true;
+                        voiceStatus.classList.remove('hidden');
+                        updateGenerateButton();
+                        
+                        // Scroll to workspace
+                        document.getElementById('workspace').scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
+                }
+            }, 100);
+        }
+        
+        // Text editor
+        textEditor.addEventListener('input', () => {
+            charCount.textContent = textEditor.value.length;
+            updateGenerateButton();
+        });
+        
+        // Speed control
+        speedRange.addEventListener('input', () => {
+            speedValue.textContent = `${parseFloat(speedRange.value).toFixed(1)}x`;
+        });
+        
+        // Emotion buttons
+        document.querySelectorAll('.emotion-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentEmotion = btn.dataset.emotion;
+            });
+        });
+        
+        // Generate button
+        function updateGenerateButton() {
+            generateBtn.disabled = !(voiceReady && textEditor.value.trim().length > 0);
+        }
+        
+        generateBtn.addEventListener('click', () => {
+            if (generateBtn.disabled) return;
+            
+            // Show generating state
+            generateBtn.innerHTML = `
+                <svg class="w-6 h-6 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Đang tạo...
+            `;
+            generateBtn.disabled = true;
+            
+            // Simulate generation
+            setTimeout(() => {
+                audioPlayerContainer.classList.add('hidden');
+                generatedAudio.classList.remove('hidden');
+                
+                generateBtn.innerHTML = `
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                    Tạo Podcast / Voice-over
+                `;
+                generateBtn.disabled = false;
+                
+                // Update duration based on text length
+                const estimatedDuration = Math.ceil(textEditor.value.length / 15);
+                document.getElementById('audioDuration').textContent = formatTime(estimatedDuration);
+                document.getElementById('totalTime').textContent = formatTime(estimatedDuration);
+            }, 2000);
+        });
+        
+        // Audio player controls
+        let isPlaying = false;
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        playPauseBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playIcon.classList.toggle('hidden', isPlaying);
+            pauseIcon.classList.toggle('hidden', !isPlaying);
+            
+            if (isPlaying) {
+                simulatePlayback();
+            }
+        });
+        
+        function simulatePlayback() {
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                if (!isPlaying) {
+                    clearInterval(progressInterval);
+                    return;
+                }
+                
+                progress += 1;
+                document.getElementById('audioProgress').style.width = `${progress}%`;
+                document.getElementById('currentTime').textContent = formatTime(Math.floor(progress * 0.3));
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    isPlaying = false;
+                    playIcon.classList.remove('hidden');
+                    pauseIcon.classList.add('hidden');
+                }
+            }, 300);
+        }
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Change voice button
+        document.getElementById('changeVoiceBtn').addEventListener('click', () => {
+            voiceStatus.classList.add('hidden');
+            voiceReady = false;
+            updateGenerateButton();
+            
+            // Reset recording UI
+            timerDisplay.classList.add('hidden');
+            timerHint.classList.add('hidden');
+            progressContainer.classList.add('hidden');
+            recordHint.classList.remove('hidden');
+            timerHint.textContent = 'Cần tối thiểu 10 giây';
+            timerHint.classList.remove('text-green-500');
+            progressBar.style.width = '0%';
+            timer.textContent = '00:00';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Tab functionality for library
+        document.querySelectorAll('#library button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#library button').forEach(b => {
+                    b.classList.remove('tab-active');
+                    b.classList.add('text-gray-600');
+                });
+                this.classList.add('tab-active');
+                this.classList.remove('text-gray-600');
+            });
+        });
+    </script>
+</body>
+</html>
